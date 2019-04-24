@@ -4,7 +4,7 @@ from args import parse_args
 import os
 import paddle.fluid as fluid
 import sys
-from network_conf import ctr_deepfm_dataset
+from network_confv2 import ctr_deepfm_dataset
 
 
 NUM_CONTEXT_FEATURE = 15
@@ -44,7 +44,7 @@ def train():
                       "./out/normed_train08",
                       "./out/normed_train09", "./out/normed_train10", "./out/normed_train11"]
     print("ready to epochs")
-    epochs = 6
+    epochs = 10
     for i in range(epochs):
         print("start %dth epoch" % i)
         dataset.set_filelist(whole_filelist[:int(len(whole_filelist))])
