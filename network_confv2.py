@@ -94,8 +94,11 @@ def deep_net(concated, lr_x=0.0001):
             param_attr=fluid.ParamAttr(learning_rate=lr_x * 0.5))
 
         fc_layers_input.append(fc)
+    w_res = fluid.layers.create_parameter(shape=[353, 16], dtype='float32', name="w_res")
+    high_path = fluid.layers.matmul(concated, w_res)
 
-    return fc_layers_input[-1]
+    return fluid.layers.elementwise_add(high_path, fc_layers_input[-1])
+    #return fc_layers_input[-1]
 
 
 def fm(concated, emb_dict_size, factor_size, lr_x=0.0001):
