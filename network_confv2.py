@@ -40,7 +40,7 @@ def ctr_deepfm_dataset(user_profile, context_feature, label,
     sparse_embed_seq_2 = embedding_layer(context_feature[slot_2[0]])
     sparse_embed_seq_3 = embedding_layer(context_feature[slot_3[0]])
     for i in slot_1[1:-1]:
-        sparse_embed_seq_1 = fluid.layers.elementwise_add(sparse_embed_seq_1, embedding_layer(context_feature[slot_1[i]]))
+        sparse_embed_seq_1 = fluid.layers.elementwise_add(sparse_embed_seq_1, embedding_layer(context_feature[i]))
     for i in slot_2[1:-1]:
         sparse_embed_seq_2 = fluid.layers.elementwise_add(sparse_embed_seq_2, embedding_layer(context_feature[i]))
     for i in slot_3[1:-1]:
