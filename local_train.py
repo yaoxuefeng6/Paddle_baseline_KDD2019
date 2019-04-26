@@ -4,11 +4,12 @@ from args import parse_args
 import os
 import paddle.fluid as fluid
 import sys
-from network_confv2 import ctr_deepfm_dataset
+from network_confv6 import ctr_deepfm_dataset
 
 
-NUM_CONTEXT_FEATURE = 15
-DIM_USER_PROFILE = 65
+NUM_CONTEXT_FEATURE = 18
+DIM_USER_PROFILE = 10
+DIM_DENSE_FEATURE = 3
 
 def train():
     args = parse_args()
@@ -16,35 +17,38 @@ def train():
         os.mkdir(args.model_output_dir)
 
     user_profile = fluid.layers.data(
-        name="user_profile", shape=[DIM_USER_PROFILE], dtype='float32')
+        name="user_profile", shape=[DIM_USER_PROFILE], dtype='int64', lod_level=1)
+    dense_feature = fluid.layers.data(
+        name="dense_feature", shape=[DIM_DENSE_FEATURE], dtype='float32')
     context_feature = [
         fluid.layers.data(name="context" + str(i), shape=[1], lod_level=1, dtype="int64")
         for i in range(0, NUM_CONTEXT_FEATURE)]
+    context_feature_fm = fluid.layers.data(
+        name="context_fm", shape=[1], dtype='int64', lod_level=1)
     label = fluid.layers.data(name='label', shape=[1], dtype='int64')
 
     print("ready to network")
-    loss, auc_var, batch_auc_var, accuracy, predict = ctr_deepfm_dataset(user_profile, context_feature, label,
+    loss, auc_var, batch_auc_var, accuracy, predict = ctr_deepfm_dataset(user_profile, dense_feature, context_feature, context_feature_fm, label,
                                                         args.embedding_size, args.sparse_feature_dim)
 
     print("ready to optimizer")
-    optimizer = fluid.optimizer.SGD(learning_rate=1e-4)
+    optimizer = fluid.optimizer.Adam(learning_rate=1e-4)
     optimizer.minimize(loss)
-
     exe = fluid.Executor(fluid.CPUPlace())
     exe.run(fluid.default_startup_program())
     dataset = fluid.DatasetFactory().create_dataset()
-    dataset.set_use_var([user_profile] + context_feature + [label])
+    dataset.set_use_var([user_profile] + [dense_feature] + context_feature + [context_feature_fm] + [label])
     pipe_command = "/home/yaoxuefeng/whls/paddle_release_home/python/bin/python  map_reader.py %d" % args.sparse_feature_dim
     dataset.set_pipe_command(pipe_command)
-    dataset.set_batch_size(100)
+    dataset.set_batch_size(1000)
     thread_num = 1
     dataset.set_thread(thread_num)
-    whole_filelist = ["./out/normed_train01", "./out/normed_train02", "./out/normed_train03",
+    whole_filelist = ["./out/normed_train00", "./out/normed_train01", "./out/normed_train02", "./out/normed_train03",
                       "./out/normed_train04", "./out/normed_train05", "./out/normed_train06", "./out/normed_train07",
                       "./out/normed_train08",
                       "./out/normed_train09", "./out/normed_train10", "./out/normed_train11"]
     print("ready to epochs")
-    epochs = 10
+    epochs = 30
     for i in range(epochs):
         print("start %dth epoch" % i)
         dataset.set_filelist(whole_filelist[:int(len(whole_filelist))])
@@ -55,7 +59,7 @@ def train():
                                debug=False)
         model_dir = args.model_output_dir + '/epoch' + str(i + 1) + ".model"
         sys.stderr.write("epoch%d finished" % (i + 1))
-        fluid.io.save_inference_model(model_dir, [user_profile.name] + [x.name for x in context_feature] + [label.name],
+        fluid.io.save_inference_model(model_dir, [dense_feature.name] + [x.name for x in context_feature] + [context_feature_fm.name] + [label.name],
                                       [loss, auc_var, accuracy, predict, label], exe)
 
 

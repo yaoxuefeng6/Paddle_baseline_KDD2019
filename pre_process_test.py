@@ -206,7 +206,12 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
             del cur_map["pid"]
             whole_rank = 0
             for plan in plan_list:
+                cur_map["mode_rank" + str(whole_rank)] = plan["transport_mode"]
                 whole_rank += 1
+            if whole_rank < 4:
+                for r in range(whole_rank, 5):
+                    cur_map["mode_rank" + str(r)] = -1
+
             cur_map["whole_rank"] = whole_rank
             flag_click = False
             rank = 1
@@ -224,6 +229,24 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
             price_list.sort(reverse=False)
             eta_list.sort(reverse=False)
             distance_list.sort(reverse=False)
+
+            for plan in plan_list:
+                if plan["price"] and int(plan["price"]) == price_list[0]:
+                    cur_map["mode_min_price"] = plan["transport_mode"]
+                if plan["price"] and int(plan["price"]) == price_list[-1]:
+                    cur_map["mode_max_price"] = plan["transport_mode"]
+                if int(plan["eta"]) == eta_list[0]:
+                    cur_map["mode_min_eta"] = plan["transport_mode"]
+                if int(plan["eta"]) == eta_list[-1]:
+                    cur_map["mode_max_eta"] = plan["transport_mode"]
+                if int(plan["distance"]) == distance_list[0]:
+                    cur_map["mode_min_distance"] = plan["transport_mode"]
+                if int(plan["distance"]) == distance_list[-1]:
+                    cur_map["mode_max_distance"] = plan["transport_mode"]
+            if "mode_min_price" not in cur_map:
+                cur_map["mode_min_price"] = -1
+            if "mode_max_price" not in cur_map:
+                cur_map["mode_max_price"] = -1
 
             for plan in plan_list:
                 cur_price = int(plan["price"]) if plan["price"] else 0

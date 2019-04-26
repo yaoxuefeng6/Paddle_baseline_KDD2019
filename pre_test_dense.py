@@ -10,15 +10,10 @@ logging.basicConfig(
 logger = logging.getLogger("preprocess")
 logger.setLevel(logging.INFO)
 
-TRAIN_QUERIES_PATH = "./data_set_phase1/train_queries.csv"
-TRAIN_PLANS_PATH = "./data_set_phase1/train_plans.csv"
+TRAIN_QUERIES_PATH = "./data_set_phase1/test_queries.csv"
+TRAIN_PLANS_PATH = "./data_set_phase1/test_plans.csv"
 TRAIN_CLICK_PATH = "./data_set_phase1/train_clicks.csv"
 PROFILES_PATH = "./data_set_phase1/profiles.csv"
-
-OUT_DIR = "./out"
-ORI_TRAIN_PATH = "train.txt"
-NORM_TRAIN_PATH = "normed_train.txt"
-
 
 O1_MIN = 115.47
 O1_MAX = 117.29
@@ -44,7 +39,6 @@ ETA_MIN = 1.0
 ETA_MAX = 72992.0
 THRESHOLD_ETA = 10800.0
 
-
 def parse_args():
     parser = argparse.ArgumentParser(description="preprocessing")
     parser.add_argument(
@@ -61,59 +55,19 @@ def parse_args():
 
 
 def build_norm_feature():
-    with open(os.path.join(OUT_DIR, NORM_TRAIN_PATH), 'w') as nf:
-        with open(os.path.join(OUT_DIR, ORI_TRAIN_PATH), 'r') as f:
+    with open("./out/normed_test_session.txt", 'w') as nf:
+        with open("./out/test_session.txt", 'r') as f:
             for line in f:
                 cur_map = json.loads(line)
 
-                if cur_map["plan"]["distance"] > THRESHOLD_DIS:
-                    cur_map["plan"]["distance"] = int(THRESHOLD_DIS)
-                elif cur_map["plan"]["distance"] > 0:
-                    cur_map["plan"]["distance"] = int(cur_map["plan"]["distance"] / 500)
+                cur_map["plan"]["distance"] = (cur_map["plan"]["distance"] - DISTANCE_MIN) / (DISTANCE_MAX - DISTANCE_MIN)
 
-                if cur_map["plan"]["price"] and cur_map["plan"]["price"] > THRESHOLD_PRICE:
-                    cur_map["plan"]["price"] = int(THRESHOLD_PRICE)
-                elif not cur_map["plan"]["price"] or cur_map["plan"]["price"] < 0:
-                    cur_map["plan"]["price"] = 0
+                if cur_map["plan"]["price"]:
+                    cur_map["plan"]["price"] = (cur_map["plan"]["price"] - PRICE_MIN) / (PRICE_MAX - PRICE_MIN)
                 else:
-                    cur_map["plan"]["price"] = int(cur_map["plan"]["price"] / 100)
+                    cur_map["plan"]["price"] = 0.0
 
-                if cur_map["plan"]["eta"] > THRESHOLD_ETA:
-                    cur_map["plan"]["eta"] = int(THRESHOLD_ETA)
-                elif cur_map["plan"]["eta"] > 0:
-                    cur_map["plan"]["eta"] = int(cur_map["plan"]["eta"] / 120)
-
-                # o1
-                if cur_map["query"]["o1"] > O1_MAX:
-                    cur_map["query"]["o1"] = int((O1_MAX - O1_MIN) / 0.02 + 1)
-                elif cur_map["query"]["o1"] < O1_MIN:
-                    cur_map["query"]["o1"] = 0
-                else:
-                    cur_map["query"]["o1"] = int((cur_map["query"]["o1"] - O1_MIN) / 0.02)
-
-                # o2
-                if cur_map["query"]["o2"] > O2_MAX:
-                    cur_map["query"]["o2"] = int((O2_MAX - O2_MIN) / 0.02 + 1)
-                elif cur_map["query"]["o2"] < O2_MIN:
-                    cur_map["query"]["o2"] = 0
-                else:
-                    cur_map["query"]["o2"] = int((cur_map["query"]["o2"] - O2_MIN) / 0.02)
-
-                # d1
-                if cur_map["query"]["d1"] > D1_MAX:
-                    cur_map["query"]["d1"] = int((D1_MAX - D1_MIN) / 0.02 + 1)
-                elif cur_map["query"]["d1"] < D1_MIN:
-                    cur_map["query"]["d1"] = 0
-                else:
-                    cur_map["query"]["d1"] = int((cur_map["query"]["d1"] - D1_MIN) / 0.02)
-
-                # d2
-                if cur_map["query"]["d2"] > D2_MAX:
-                    cur_map["query"]["d2"] = int((D2_MAX - D2_MIN) / 0.02 + 1)
-                elif cur_map["query"]["d2"] < D2_MIN:
-                    cur_map["query"]["d2"] = 0
-                else:
-                    cur_map["query"]["d2"] = int((cur_map["query"]["d2"] - D2_MIN) / 0.02)
+                cur_map["plan"]["eta"] = (cur_map["plan"]["eta"] - ETA_MIN) / (ETA_MAX - ETA_MIN)
 
                 cur_json_instance = json.dumps(cur_map)
                 nf.write(cur_json_instance + '\n')
@@ -124,16 +78,19 @@ def preprocess():
     Construct the train data indexed by session id and mode id jointly. Convert all the raw features (user profile,
     od pair, req time, click time, eta, price, distance, transport mode) to one-hot ids used for
     embedding. We split the one-hot features into two categories: user feature and context feature for
-    better understanding of FM algorithm.
-    Note that the user profile is already provided by one-hot encoded form, we treat it as embedded vector
-    for unity with the context feature and easily using of PaddlePaddle embedding layer. Given the
+    better understanding of FFM algorithm.
+    Note that the user profile is already provided by one-hot encoded form, we convert it back to the
+    ids for unity with the context feature and easily using of PaddlePaddle embedding layer. Given the
     train clicks data, we label each train instance with 1 or 0 depend on if this instance is clicked or
-    not include non-click case.
+    not.
     :return:
     """
     #args = parse_args()
 
     train_data_dict = {}
+    with open("./weather.json", 'r') as f:
+        weather_dict = json.load(f)
+
     with open(TRAIN_QUERIES_PATH, 'r') as f:
         csv_reader = csv.reader(f, delimiter=',')
         train_index_list = []
@@ -152,6 +109,13 @@ def preprocess():
 
             reqweekday = datetime.datetime.strptime(line[2], '%Y-%m-%d %H:%M:%S').strftime("%w")
             reqhour = datetime.datetime.strptime(line[2], '%Y-%m-%d %H:%M:%S').strftime("%H")
+
+            date_key = datetime.datetime.strptime(line[2], '%Y-%m-%d %H:%M:%S').strftime("%m-%d")
+            train_data_dict[train_index]["weather"] = {}
+            train_data_dict[train_index]["weather"].update({"max_temp": weather_dict[date_key]["max_temp"]})
+            train_data_dict[train_index]["weather"].update({"min_temp": weather_dict[date_key]["min_temp"]})
+            train_data_dict[train_index]["weather"].update({"wea": weather_dict[date_key]["weather"]})
+            train_data_dict[train_index]["weather"].update({"wind": weather_dict[date_key]["wind"]})
 
             train_data_dict[train_index]["query"].update({"weekday":reqweekday})
             train_data_dict[train_index]["query"].update({"hour":reqhour})
@@ -197,18 +161,19 @@ def preprocess():
 
 
 def generate_sparse_features(train_data_dict, profile_map, session_click_map, plan_map):
-    if not os.path.isdir(OUT_DIR):
-        os.mkdir(OUT_DIR)
-    with open(os.path.join(OUT_DIR, ORI_TRAIN_PATH), 'w') as f_train:
+    if not os.path.isdir("./out/"):
+        os.mkdir("./out/")
+    with open(os.path.join("./out/", "test_session.txt"), 'w') as f_train:
         for session_id, plan_list in plan_map.items():
             if session_id not in train_data_dict:
                 continue
             cur_map = train_data_dict[session_id]
+            cur_map["session_id"] = session_id
             if cur_map["pid"] != "":
                 cur_map["profile"] = profile_map[cur_map["pid"]]
             else:
                 cur_map["profile"] = [0]
-            del cur_map["pid"]
+            # del cur_map["pid"]
             whole_rank = 0
             for plan in plan_list:
                 whole_rank += 1
@@ -236,6 +201,7 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
             eta_list.sort(reverse=False)
             distance_list.sort(reverse=False)
 
+            """
             for plan in plan_list:
                 if plan["price"] and int(plan["price"]) == price_list[0]:
                     cur_map["mode_min_price"] = plan["transport_mode"]
@@ -253,7 +219,7 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_map["mode_min_price"] = -1
             if "mode_max_price" not in cur_map:
                 cur_map["mode_max_price"] = -1
-
+            """
 
             for plan in plan_list:
                 cur_price = int(plan["price"]) if plan["price"] else 0
@@ -267,8 +233,6 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                         int(plan["transport_mode"]) == int(session_click_map[session_id])):
                     cur_map["plan"] = plan
                     cur_map["label"] = 1
-                    flag_click = True
-                    # print("label is 1")
                 else:
                     cur_map["plan"] = plan
                     cur_map["label"] = 0
@@ -277,6 +241,7 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 rank += 1
                 cur_json_instance = json.dumps(cur_map)
                 f_train.write(cur_json_instance + '\n')
+
             if not flag_click:
                 cur_map["plan"]["distance"] = -1
                 cur_map["plan"]["price"] = -1
@@ -285,23 +250,22 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_map["plan_rank"] = 0
                 cur_map["price_rank"] = 0
                 cur_map["eta_rank"] = 0
-                cur_map["distance_rank"] = 0
+                cur_map["plan_rank"] = 0
                 cur_map["label"] = 1
                 cur_json_instance = json.dumps(cur_map)
                 f_train.write(cur_json_instance + '\n')
             else:
-                if random.random() < 0.30:
-                    cur_map["plan"]["distance"] = -1
-                    cur_map["plan"]["price"] = -1
-                    cur_map["plan"]["eta"] = -1
-                    cur_map["plan"]["transport_mode"] = 0
-                    cur_map["plan_rank"] = 0
-                    cur_map["price_rank"] = 0
-                    cur_map["eta_rank"] = 0
-                    cur_map["distance_rank"] = 0
-                    cur_map["label"] = 0
-                    cur_json_instance = json.dumps(cur_map)
-                    f_train.write(cur_json_instance + '\n')
+                cur_map["plan"]["distance"] = -1
+                cur_map["plan"]["price"] = -1
+                cur_map["plan"]["eta"] = -1
+                cur_map["plan"]["transport_mode"] = 0
+                cur_map["plan_rank"] = 0
+                cur_map["price_rank"] = 0
+                cur_map["eta_rank"] = 0
+                cur_map["plan_rank"] = 0
+                cur_map["label"] = 0
+                cur_json_instance = json.dumps(cur_map)
+                f_train.write(cur_json_instance + '\n')
 
 
     build_norm_feature()

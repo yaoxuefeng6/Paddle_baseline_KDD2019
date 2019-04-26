@@ -56,6 +56,8 @@ def to_lodtensor(data, place):
     res = fluid.LoDTensor()
     res.set(flattened_data, place)
     res.set_lod([lod])
+
+
     return res
 
 
@@ -64,13 +66,20 @@ def data2tensor(data, place):
     dense = data[0]
     sparse = data[1:-1]
     y = data[-1]
-    dense_data = np.array([x[0] for x in data]).astype("float32")
-    dense_data = dense_data.reshape([-1, 65])
-    feed_dict["user_profile"] = dense_data
-    for i in range(15):##################### temporaly note this
-        sparse_data = to_lodtensor([x[1 + i] for x in data], place)
+    #user_data = np.array([x[0] for x in data]).astype("float32")
+    #user_data = user_data.reshape([-1, 10])
+    #feed_dict["user_profile"] = user_data
+    dense_data = np.array([x[1] for x in data]).astype("float32")
+    dense_data = dense_data.reshape([-1, 3])
+    feed_dict["dense_feature"] = dense_data
+    for i in range(18):##################### temporaly note this
+        sparse_data = to_lodtensor([x[2 + i] for x in data], place)
         feed_dict["context" + str(i)] = sparse_data
 
+    context_fm = to_lodtensor(np.array([x[-2] for x in data]).astype("float32"), place)
+
+    #context_fm.reshape(-1, 22)
+    feed_dict["context_fm"] = context_fm
     y_data = np.array([x[-1] for x in data]).astype("int64")
     y_data = y_data.reshape([-1, 1])
     feed_dict["label"] = y_data
@@ -100,7 +109,7 @@ def test():
     epochs = 1
 
     for i in range(epochs):
-        cur_model_path = args.model_path + "/epoch" + str(10) + ".model"
+        cur_model_path = args.model_path + "/epoch" + str(29) + ".model"
         with open("./testres/res" + str(i + 8), 'w') as r:
             with fluid.scope_guard(test_scope):
                 [inference_program, feed_target_names, fetch_targets] = \
