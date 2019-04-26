@@ -8,15 +8,25 @@ Note that the code is rough and for my daily use. They will be trimmed these day
 ## Install PaddlePaddle
 please visit to the official site of PaddlePaddle(http://www.paddlepaddle.org/documentation/docs/zh/1.4/beginners_guide/install/index_cn.html) 
 ## preprocess feature
+```python
+python preprocess.py
+```python
 preprocess.py and preprocess_dense.py is the code for preprocessing the raw. the two versions are provided to dealing with all sparse feature and sparse plus dense feature. Correspondly, pre_process_test.py and pre_test_dense.py are the codes to preproccess test raw data. 
 
 ## build the network
-main network logic is in network_confv?.py. I try sereval networks and public some of them. There may be some mistakes on the networks but all of them are functional. 
+main network logic is in network_confv?.py. I try sereval networks and public some of them. There may be some mistakes on the networks but all of them are functional. the networks are base on fm & deep related algorithms
 
 ## train the network
+```python
+python local_train.py
+```python
 In local_train.py and map_reader.py, I use dataset API, so we need to download the correspond .whl package or clone codes on develop branch of PaddlePaddle
 
 ## test results
+```python
+python generate_test.py
+python build_submit.py
+```python
 In generate_test.py and build_submit, for convenience, I use the whole train data to train the network and test the network with provided data without label
 
 
