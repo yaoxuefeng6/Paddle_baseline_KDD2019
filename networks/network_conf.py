@@ -1,7 +1,25 @@
+# Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import paddle.fluid as fluid
 import math
 
 user_profile_dim = 65
+num_context = 25
+dim_fm_vector = 16
+dim_concated = user_profile_dim + dim_fm_vector * (num_context)
 
 
 def ctr_deepfm_dataset(user_profile, context_feature, label,
@@ -28,7 +46,7 @@ def ctr_deepfm_dataset(user_profile, context_feature, label,
     concated = fluid.layers.batch_norm(input=concated_ori, name="bn", epsilon=1e-4)
 
     deep = deep_net(concated)
-    linear_term, second_term = fm(concated, 305, 8) #depend on the number of context feature
+    linear_term, second_term = fm(concated, dim_concated, 8) #depend on the number of context feature
 
     predict = fluid.layers.fc(input=[deep, linear_term, second_term], size=2, act="softmax",
                               param_attr=fluid.ParamAttr(initializer=fluid.initializer.Normal(
@@ -48,7 +66,7 @@ def ctr_deepfm_dataset(user_profile, context_feature, label,
 
 def deep_net(concated, lr_x=0.0001):
     fc_layers_input = [concated]
-    fc_layers_size = [256, 128, 64, 32, 16]
+    fc_layers_size = [128, 64, 32, 16]
     fc_layers_act = ["relu"] * (len(fc_layers_size))
 
     for i in range(len(fc_layers_size)):
@@ -78,3 +96,11 @@ def fm(concated, emb_dict_size, factor_size, lr_x=0.0001):
     second_term = 0.5 * (input_mul_factor_square - input_square_mul_factor_square)
 
     return linear_term, second_term
+
+
+
+
+
+
+
+

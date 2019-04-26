@@ -1,3 +1,18 @@
+# Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import os, sys, time, random, csv, datetime, json
 import pandas as pd
 import numpy as np
@@ -29,7 +44,7 @@ D2_MAX = 40.96
 
 DISTANCE_MIN = 1.0
 DISTANCE_MAX = 225864.0
-THRESHOLD_DIS = 40000.0
+THRESHOLD_DIS = 200000.0
 
 PRICE_MIN = 200.0
 PRICE_MAX = 92300.0
@@ -38,20 +53,6 @@ THRESHOLD_PRICE = 20000
 ETA_MIN = 1.0
 ETA_MAX = 72992.0
 THRESHOLD_ETA = 10800.0
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="preprocessing")
-    parser.add_argument(
-        '--raw_data_dir',
-        type=str,
-        default='./data_set_phase/',
-        help="The path of training information")
-    parser.add_argument(
-        '--preprocessed_data_path',
-        type=str,
-        default='./out_data/',
-        help="The path of preprocessed out data")
-    return parser.parse_args()
 
 
 def build_norm_feature():
@@ -184,7 +185,6 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                     cur_map["mode_rank" + str(r)] = -1
 
             cur_map["whole_rank"] = whole_rank
-            flag_click = False
             rank = 1
 
             price_list = []
@@ -201,7 +201,6 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
             eta_list.sort(reverse=False)
             distance_list.sort(reverse=False)
 
-            """
             for plan in plan_list:
                 if plan["price"] and int(plan["price"]) == price_list[0]:
                     cur_map["mode_min_price"] = plan["transport_mode"]
@@ -219,7 +218,6 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_map["mode_min_price"] = -1
             if "mode_max_price" not in cur_map:
                 cur_map["mode_max_price"] = -1
-            """
 
             for plan in plan_list:
                 cur_price = int(plan["price"]) if plan["price"] else 0
@@ -242,30 +240,17 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_json_instance = json.dumps(cur_map)
                 f_train.write(cur_json_instance + '\n')
 
-            if not flag_click:
-                cur_map["plan"]["distance"] = -1
-                cur_map["plan"]["price"] = -1
-                cur_map["plan"]["eta"] = -1
-                cur_map["plan"]["transport_mode"] = 0
-                cur_map["plan_rank"] = 0
-                cur_map["price_rank"] = 0
-                cur_map["eta_rank"] = 0
-                cur_map["plan_rank"] = 0
-                cur_map["label"] = 1
-                cur_json_instance = json.dumps(cur_map)
-                f_train.write(cur_json_instance + '\n')
-            else:
-                cur_map["plan"]["distance"] = -1
-                cur_map["plan"]["price"] = -1
-                cur_map["plan"]["eta"] = -1
-                cur_map["plan"]["transport_mode"] = 0
-                cur_map["plan_rank"] = 0
-                cur_map["price_rank"] = 0
-                cur_map["eta_rank"] = 0
-                cur_map["plan_rank"] = 0
-                cur_map["label"] = 0
-                cur_json_instance = json.dumps(cur_map)
-                f_train.write(cur_json_instance + '\n')
+            cur_map["plan"]["distance"] = -1
+            cur_map["plan"]["price"] = -1
+            cur_map["plan"]["eta"] = -1
+            cur_map["plan"]["transport_mode"] = 0
+            cur_map["plan_rank"] = 0
+            cur_map["price_rank"] = 0
+            cur_map["eta_rank"] = 0
+            cur_map["plan_rank"] = 0
+            cur_map["label"] = 1
+            cur_json_instance = json.dumps(cur_map)
+            f_train.write(cur_json_instance + '\n')
 
 
     build_norm_feature()

@@ -1,3 +1,18 @@
+# Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import argparse
 import logging
 import numpy as np
@@ -11,7 +26,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
-
+num_context_feature = 25
 
 def parse_args():
     parser = argparse.ArgumentParser(description="PaddlePaddle DeepFM example")
@@ -66,19 +81,18 @@ def data2tensor(data, place):
     dense = data[0]
     sparse = data[1:-1]
     y = data[-1]
-    #user_data = np.array([x[0] for x in data]).astype("float32")
-    #user_data = user_data.reshape([-1, 10])
-    #feed_dict["user_profile"] = user_data
+    user_data = np.array([x[0] for x in data]).astype("float32")
+    user_data = user_data.reshape([-1, 10])
+    feed_dict["user_profile"] = user_data
     dense_data = np.array([x[1] for x in data]).astype("float32")
     dense_data = dense_data.reshape([-1, 3])
     feed_dict["dense_feature"] = dense_data
-    for i in range(18):##################### temporaly note this
+    for i in range(num_context_feature):
         sparse_data = to_lodtensor([x[2 + i] for x in data], place)
         feed_dict["context" + str(i)] = sparse_data
 
     context_fm = to_lodtensor(np.array([x[-2] for x in data]).astype("float32"), place)
 
-    #context_fm.reshape(-1, 22)
     feed_dict["context_fm"] = context_fm
     y_data = np.array([x[-1] for x in data]).astype("int64")
     y_data = y_data.reshape([-1, 1])
@@ -97,20 +111,15 @@ def test():
     map_dataset.setup(args.sparse_feature_dim)
     exe = fluid.Executor(place)
 
-    # whole_filelist = ["raw_data/part-%d" % x for x in range(len(os.listdir("raw_data")))]
     whole_filelist = ["./out/normed_test_session.txt"]
     test_files = whole_filelist[int(0.0 * len(whole_filelist)):int(1.0 * len(whole_filelist))]
 
-    def set_zero(var_name):
-        param = inference_scope.var(var_name).get_tensor()
-        param_array = np.zeros(param._get_dims()).astype("int64")
-        param.set(param_array, place)
 
-    epochs = 1
+    epochs = 10
 
     for i in range(epochs):
-        cur_model_path = args.model_path + "/epoch" + str(29) + ".model"
-        with open("./testres/res" + str(i + 8), 'w') as r:
+        cur_model_path = args.model_path + "/epoch" + str(1) + ".model"
+        with open("./testres/res" + str(i), 'w') as r:
             with fluid.scope_guard(test_scope):
                 [inference_program, feed_target_names, fetch_targets] = \
                     fluid.io.load_inference_model(cur_model_path, exe)
@@ -122,11 +131,7 @@ def test():
                     loss_val, auc_val, accuracy, predict, _ = exe.run(inference_program,
                                                 feed=feed_dict,
                                                 fetch_list=fetch_targets, return_numpy=False)
-                    #if k % 100 == 0:
-                        #print(np.array(predict))
-                        #x = np.array(predict)
-                        #print(x.shape)
-                    #k += 1
+
                     x = np.array(predict)
                     for j in range(x.shape[0]):
                         r.write(str(x[j][1]))

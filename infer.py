@@ -91,14 +91,14 @@ def infer():
     place = fluid.CPUPlace()
     inference_scope = fluid.core.Scope()
 
-    #filelist = ["%s/%s" % (args.data_path, x) for x in os.listdir(args.data_path)]
+    filelist = ["%s/%s" % (args.data_path, x) for x in os.listdir(args.data_path)]
     from map_reader import MapDataset
     map_dataset = MapDataset()
     map_dataset.setup(args.sparse_feature_dim)
     exe = fluid.Executor(place)
 
-    #whole_filelist = ["raw_data/part-%d" % x for x in range(len(os.listdir("raw_data")))]
-    whole_filelist = ["./out/normed_train09",  "./out/normed_train10",  "./out/normed_train11"]
+    whole_filelist = ["raw_data/part-%d" % x for x in range(len(os.listdir("raw_data")))]
+    #whole_filelist = ["./out/normed_train09",  "./out/normed_train10",  "./out/normed_train11"]
     test_files = whole_filelist[int(0.0 * len(whole_filelist)):int(1.0 * len(whole_filelist))]
 
     # file_groups = [whole_filelist[i:i+train_thread_num] for i in range(0, len(whole_filelist), train_thread_num)]
@@ -120,9 +120,8 @@ def infer():
 
             test_reader = map_dataset.infer_reader(test_files, 1000, 100000)
             for batch_id, data in enumerate(test_reader()):
-                feed_dict, test_dict = data2tensor(data, place)
                 loss_val, auc_val, accuracy, predict, label = exe.run(inference_program,
-                                            feed=feed_dict,
+                                            feed=data2tensor(data, place),
                                             fetch_list=fetch_targets, return_numpy=False)
 
                 #print(np.array(predict))

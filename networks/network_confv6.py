@@ -1,20 +1,27 @@
+# Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import paddle.fluid as fluid
 import math
 
-user_profile_dim = 68
+user_profile_dim = 65
 dense_feature_dim = 3
-slot_1 = [0, 1, 2, 3, 4, 5]
-slot_2 = [6]
-slot_3 = [7, 8, 9, 10, 11]
-slot_4 = [12, 13, 14, 15, 16]
-slot_5 = [17, 18, 19, 20]
 
 def ctr_deepfm_dataset(user_profile, dense_feature, context_feature, context_feature_fm, label,
                        embedding_size, sparse_feature_dim):
     def dense_fm_layer(input, emb_dict_size, factor_size, fm_param_attr):
-        """
-        dense_fm_layer
-        """
+
         first_order = fluid.layers.fc(input=input, size=1)
         emb_table = fluid.layers.create_parameter(shape=[emb_dict_size, factor_size],
                                                   dtype='float32', attr=fm_param_attr)
@@ -75,12 +82,6 @@ def ctr_deepfm_dataset(user_profile, dense_feature, context_feature, context_fea
                                        initializer=fluid.initializer.Uniform()))
 
     sparse_embed_seq = list(map(embedding_layer, context_feature))
-
-    #w = fluid.layers.create_parameter(
-        #shape=[65, 65], dtype='float32',
-        #name="w_fm")
-
-    #user_profile_emb = fluid.layers.matmul(user_profile, w)
 
     concated_ori = fluid.layers.concat(sparse_embed_seq + [dense_feature], axis=1)
     concated = fluid.layers.batch_norm(input=concated_ori, name="bn", epsilon=1e-4)

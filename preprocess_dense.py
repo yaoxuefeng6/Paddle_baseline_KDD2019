@@ -1,4 +1,18 @@
-import os, sys, time, random, csv, datetime, json
+# Copyright (c) 2016 PaddlePaddle Authors. All Rights Reserved
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import os, random, csv, datetime, json
 import pandas as pd
 import numpy as np
 import argparse
@@ -18,7 +32,7 @@ PROFILES_PATH = "./data_set_phase1/profiles.csv"
 OUT_DIR = "./out"
 ORI_TRAIN_PATH = "train.txt"
 NORM_TRAIN_PATH = "normed_train.txt"
-
+THRESHOLD_LABEL = 0.5
 
 
 
@@ -45,21 +59,6 @@ THRESHOLD_PRICE = 20000
 ETA_MIN = 1.0
 ETA_MAX = 72992.0
 THRESHOLD_ETA = 10800.0
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="preprocessing")
-    parser.add_argument(
-        '--raw_data_dir',
-        type=str,
-        default='./data_set_phase/',
-        help="The path of training information")
-    parser.add_argument(
-        '--preprocessed_data_path',
-        type=str,
-        default='./out_data/',
-        help="The path of preprocessed out data")
-    return parser.parse_args()
 
 
 def build_norm_feature():
@@ -93,7 +92,6 @@ def preprocess():
     not include non-click case. To Be Changed
     :return:
     """
-    #args = parse_args()
 
     train_data_dict = {}
 
@@ -183,7 +181,7 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_map["profile"] = profile_map[cur_map["pid"]]
             else:
                 cur_map["profile"] = [0]
-            #del cur_map["pid"]
+
             whole_rank = 0
             for plan in plan_list:
                 whole_rank += 1
@@ -211,7 +209,6 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
             eta_list.sort(reverse=False)
             distance_list.sort(reverse=False)
 
-            """
             for plan in plan_list:
                 if plan["price"] and int(plan["price"]) == price_list[0]:
                     cur_map["mode_min_price"] = plan["transport_mode"]
@@ -229,7 +226,7 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_map["mode_min_price"] = -1
             if "mode_max_price" not in cur_map:
                 cur_map["mode_max_price"] = -1
-            """
+
             for plan in plan_list:
                 if ("transport_mode" in plan) and (session_id in session_click_map) and (
                         int(plan["transport_mode"]) == int(session_click_map[session_id])):
@@ -270,7 +267,7 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_json_instance = json.dumps(cur_map)
                 f_train.write(cur_json_instance + '\n')
             else:
-                if random.random() < 2:
+                if random.random() < THRESHOLD_LABEL:
                     cur_map["plan"]["distance"] = -1
                     cur_map["plan"]["price"] = -1
                     cur_map["plan"]["eta"] = -1

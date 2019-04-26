@@ -7,9 +7,10 @@ import sys
 from network_confv6 import ctr_deepfm_dataset
 
 
-NUM_CONTEXT_FEATURE = 18
+NUM_CONTEXT_FEATURE = 25
 DIM_USER_PROFILE = 10
 DIM_DENSE_FEATURE = 3
+PYTHON_PATH = "/home/yaoxuefeng/whls/paddle_release_home/python/bin/python" # this is mine change yours
 
 def train():
     args = parse_args()
@@ -31,24 +32,27 @@ def train():
     loss, auc_var, batch_auc_var, accuracy, predict = ctr_deepfm_dataset(user_profile, dense_feature, context_feature, context_feature_fm, label,
                                                         args.embedding_size, args.sparse_feature_dim)
 
-    print("ready to optimizer")
+    print("ready to optimize")
     optimizer = fluid.optimizer.Adam(learning_rate=1e-4)
     optimizer.minimize(loss)
     exe = fluid.Executor(fluid.CPUPlace())
     exe.run(fluid.default_startup_program())
     dataset = fluid.DatasetFactory().create_dataset()
     dataset.set_use_var([user_profile] + [dense_feature] + context_feature + [context_feature_fm] + [label])
-    pipe_command = "/home/yaoxuefeng/whls/paddle_release_home/python/bin/python  map_reader.py %d" % args.sparse_feature_dim
+    pipe_command = PYTHON_PATH + "  map_reader.py %d" % args.sparse_feature_dim
     dataset.set_pipe_command(pipe_command)
-    dataset.set_batch_size(1000)
+    dataset.set_batch_size(args.batch_size)
     thread_num = 1
     dataset.set_thread(thread_num)
+    whole_filelist = ["./out/normed_train%d" % x for x in range(len(os.listdir("out")))]
+    """
     whole_filelist = ["./out/normed_train00", "./out/normed_train01", "./out/normed_train02", "./out/normed_train03",
                       "./out/normed_train04", "./out/normed_train05", "./out/normed_train06", "./out/normed_train07",
                       "./out/normed_train08",
                       "./out/normed_train09", "./out/normed_train10", "./out/normed_train11"]
+    """
     print("ready to epochs")
-    epochs = 30
+    epochs = 10
     for i in range(epochs):
         print("start %dth epoch" % i)
         dataset.set_filelist(whole_filelist[:int(len(whole_filelist))])
