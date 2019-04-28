@@ -7,7 +7,8 @@ The reason of the publication of this baseline codes is to encourage us to use P
 The example codes are ran on Linux, single machine. Note that distributed train options are not provided here, if you want to learn more about this, please check more modes examples on https://github.com/PaddlePaddle/models. About the speed of training, for one epoch, 1000 batch size, it would take about 8 mins to train the whole training instances generated from raw data using SGD optimizer (it would take relatively longer using Adam optimizer). 
 
 The configuration and process of all the networks are fundamental, a lot of optimizations can be done based on them to achieve better results e.g. better cost function, more powerful feature engineering, designed model validation, NN optimization tricks...
-Note that the code is rough and from my daily use. They will be trimmed these days...
+
+The code is rough and from my daily use. They will be trimmed these days...
 ## Install PaddlePaddle
 please visit the official site of PaddlePaddle(http://www.paddlepaddle.org/documentation/docs/zh/1.4/beginners_guide/install/index_cn.html) 
 ## preprocess feature
