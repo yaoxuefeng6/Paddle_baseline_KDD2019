@@ -4,7 +4,7 @@ Paddle baseline for KDD2019 "Context-Aware Multi-Modal Transportation Recommenda
 This repository is the demo codes for the  KDD2019 "Context-Aware Multi-Modal Transportation Recommendation" competition using PaddlePaddle. It is writen by python and uses PaddlePaddle to solove the task. Note that this repository is on developing and welcome everyone to contribute. The current baseline solution codes can get 0.68 - 0.69 score of online submission. As an example, my submission based on these networks programmed by PaddlePaddle is 0.6898.
 The reason of the publication of this baseline codes is to encourage us to use PaddlePaddle and build the most powerful recommendation model via PaddlePaddle. 
 
-The example codes are ran on Linux. About the speed of training and predicting, for one epoch, it would take 8 mins to train the whole train instances generated from raw data using SGD optimizer (it would take relatively longer using Adam optimizer). 
+The example codes are ran on Linux, single machine. Note that distributed train options are not provided here, if you want to learn more about this, please visit more modes example on https://github.com/PaddlePaddle/models. About the speed of training, for one epoch, 1000 batch size, it would take about 8 mins to train the whole train instances generated from raw data using SGD optimizer (it would take relatively longer using Adam optimizer). 
 
 The configuration and process of all the networks are fundamental, a lot of optimizations can be done based on them to achieve better results e.g. better cost function, more powerful feature engineering, designed model validation, NN tricks...
 Note that the code is rough and from my daily use. They will be trimmed these days...
