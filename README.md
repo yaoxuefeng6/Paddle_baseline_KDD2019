@@ -4,12 +4,12 @@ Paddle baseline for KDD2019 "Context-Aware Multi-Modal Transportation Recommenda
 This repository is the demo codes for the  KDD2019 "Context-Aware Multi-Modal Transportation Recommendation" competition using PaddlePaddle. It is writen by python and uses PaddlePaddle to solove the task. Note that this repository is on developing and welcome everyone to contribute. The current baseline solution codes can get 0.68 - 0.69 score of online submission. As an example, my submission based on these networks programmed by PaddlePaddle is 0.6898.
 The reason of the publication of this baseline codes is to encourage us to use PaddlePaddle and build the most powerful recommendation model via PaddlePaddle. 
 
-The example codes are ran on Linux, single machine. Note that distributed train options are not provided here, if you want to learn more about this, please check more modes examples on https://github.com/PaddlePaddle/models. About the speed of training, for one epoch, 1000 batch size, it would take about 8 mins to train the whole train instances generated from raw data using SGD optimizer (it would take relatively longer using Adam optimizer). 
+The example codes are ran on Linux, single machine. Note that distributed train options are not provided here, if you want to learn more about this, please check more modes examples on https://github.com/PaddlePaddle/models. About the speed of training, for one epoch, 1000 batch size, it would take about 8 mins to train the whole training instances generated from raw data using SGD optimizer (it would take relatively longer using Adam optimizer). 
 
 The configuration and process of all the networks are fundamental, a lot of optimizations can be done based on them to achieve better results e.g. better cost function, more powerful feature engineering, designed model validation, NN optimization tricks...
 Note that the code is rough and from my daily use. They will be trimmed these days...
 ## Install PaddlePaddle
-please visit to the official site of PaddlePaddle(http://www.paddlepaddle.org/documentation/docs/zh/1.4/beginners_guide/install/index_cn.html) 
+please visit the official site of PaddlePaddle(http://www.paddlepaddle.org/documentation/docs/zh/1.4/beginners_guide/install/index_cn.html) 
 ## preprocess feature
 ```python
 python preprocess.py # change for different feature strategy
