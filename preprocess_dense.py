@@ -253,7 +253,8 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                     rank += 1
                     cur_json_instance = json.dumps(cur_map)
                     f_train.write(cur_json_instance + '\n')
-
+            
+            cur_map["plan"] = {}
             if not flag_click:
                 cur_map["plan"]["distance"] = -1
                 cur_map["plan"]["price"] = -1
