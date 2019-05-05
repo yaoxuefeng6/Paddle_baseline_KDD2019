@@ -27,6 +27,7 @@ main network logic is in network_confv?.py. The networks are base on fm & deep r
 python local_train.py
 ```
 In local_train.py and map_reader.py, I use dataset API, so we need to download the corresponding .whl package or clone codes on develop branch of PaddlePaddle. The reason to use this is the speed of feeding data is much faster.
+Note that the input format feed into the network is self-defined. make we build the same format between training and test.  
 
 ## test results
 ```python
