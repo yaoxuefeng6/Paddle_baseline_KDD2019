@@ -13,9 +13,11 @@ The code is rough and from my daily use. They will be trimmed these days...
 please visit the official site of PaddlePaddle(http://www.paddlepaddle.org/documentation/docs/zh/1.4/beginners_guide/install/index_cn.html) 
 ## preprocess feature
 ```python
-python preprocess.py # change for different feature strategy
+python preprocess_dense.py # change for different feature strategy
+python pre_test_dense.py 
 ```
 preprocess.py and preprocess_dense.py is the code for preprocessing the raw data. Two versions are provided to deal with all sparse features and sparse plus dense features. Correspondingly, pre_process_test.py and pre_test_dense.py are the codes to preproccess test raw data. The training instances are saved in json. It is very easy to add new features. In our demo, all features are generated from provided raw data except for weather feature, which is gengerated from open weather records.
+Note that the feature generated in this step need to fit in the input of the model input. Make sure we use the right version. In demo codes, The sparse plus dense features are used for network_confv6. 
 
 ## build the network
 main network logic is in network_confv?.py. The networks are base on fm & deep related algorithms. I try several networks and public some of them. There may be some defects in the networks but all of them are functional. 
