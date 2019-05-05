@@ -26,7 +26,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("fluid")
 logger.setLevel(logging.INFO)
-num_context_feature = 25
+num_context_feature = 22
 
 def parse_args():
     parser = argparse.ArgumentParser(description="PaddlePaddle DeepFM example")
@@ -83,7 +83,7 @@ def data2tensor(data, place):
     y = data[-1]
     user_data = np.array([x[0] for x in data]).astype("float32")
     user_data = user_data.reshape([-1, 10])
-    feed_dict["user_profile"] = user_data
+    #feed_dict["user_profile"] = user_data
     dense_data = np.array([x[1] for x in data]).astype("float32")
     dense_data = dense_data.reshape([-1, 3])
     feed_dict["dense_feature"] = dense_data
@@ -115,7 +115,7 @@ def test():
     test_files = whole_filelist[int(0.0 * len(whole_filelist)):int(1.0 * len(whole_filelist))]
 
 
-    epochs = 10
+    epochs = 1
 
     for i in range(epochs):
         cur_model_path = args.model_path + "/epoch" + str(1) + ".model"
@@ -127,6 +127,7 @@ def test():
                 test_reader = map_dataset.test_reader(test_files, 1000, 100000)
                 k = 0
                 for batch_id, data in enumerate(test_reader()):
+                    print(len(data[0]))
                     feed_dict = data2tensor(data, place)
                     loss_val, auc_val, accuracy, predict, _ = exe.run(inference_program,
                                                 feed=feed_dict,

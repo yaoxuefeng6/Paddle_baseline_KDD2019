@@ -7,7 +7,7 @@ import sys
 from network_confv6 import ctr_deepfm_dataset
 
 
-NUM_CONTEXT_FEATURE = 25
+NUM_CONTEXT_FEATURE = 22
 DIM_USER_PROFILE = 10
 DIM_DENSE_FEATURE = 3
 PYTHON_PATH = "/home/yaoxuefeng/whls/paddle_release_home/python/bin/python" # this is mine change yours
@@ -33,7 +33,7 @@ def train():
                                                         args.embedding_size, args.sparse_feature_dim)
 
     print("ready to optimize")
-    optimizer = fluid.optimizer.Adam(learning_rate=1e-4)
+    optimizer = fluid.optimizer.SGD(learning_rate=1e-4)
     optimizer.minimize(loss)
     exe = fluid.Executor(fluid.CPUPlace())
     exe.run(fluid.default_startup_program())
@@ -45,12 +45,10 @@ def train():
     thread_num = 1
     dataset.set_thread(thread_num)
     whole_filelist = ["./out/normed_train%d" % x for x in range(len(os.listdir("out")))]
-    """
     whole_filelist = ["./out/normed_train00", "./out/normed_train01", "./out/normed_train02", "./out/normed_train03",
                       "./out/normed_train04", "./out/normed_train05", "./out/normed_train06", "./out/normed_train07",
                       "./out/normed_train08",
                       "./out/normed_train09", "./out/normed_train10", "./out/normed_train11"]
-    """
     print("ready to epochs")
     epochs = 10
     for i in range(epochs):

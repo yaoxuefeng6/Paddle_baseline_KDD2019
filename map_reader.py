@@ -32,7 +32,7 @@ class MapDataset(dg.MultiSlotDataGenerator):
         self.weather_feature_list = ["max_temp", "min_temp", "wea", "wind"]
         self.hash_dim = 1000001
         self.train_idx_ = 2000000
-        self.categorical_range_ = range(0, 25)
+        self.categorical_range_ = range(0, 22)
 
     def _process_line(self, line):
         instance = json.loads(line)
@@ -43,12 +43,12 @@ class MapDataset(dg.MultiSlotDataGenerator):
         else:
             profile.extend([0]*(10-len_profile))
             user_profile_feature = profile
-
+        """
         if len(profile) > 1 or (len(profile) == 1 and profile[0] != 0):
             for p in profile:
                 if p >= 1 and p <= 65:
                     user_profile_feature[p - 1] = 1
-
+        """
         context_feature = []
         context_feature_fm = []
         dense_feature = [0] * self.dense_length
