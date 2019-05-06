@@ -17,8 +17,8 @@ def train():
     if not os.path.isdir(args.model_output_dir):
         os.mkdir(args.model_output_dir)
 
-    user_profile = fluid.layers.data(
-        name="user_profile", shape=[DIM_USER_PROFILE], dtype='int64', lod_level=1)
+    #user_profile = fluid.layers.data(
+        #name="user_profile", shape=[DIM_USER_PROFILE], dtype='int64', lod_level=1)
     dense_feature = fluid.layers.data(
         name="dense_feature", shape=[DIM_DENSE_FEATURE], dtype='float32')
     context_feature = [
@@ -29,7 +29,7 @@ def train():
     label = fluid.layers.data(name='label', shape=[1], dtype='int64')
 
     print("ready to network")
-    loss, auc_var, batch_auc_var, accuracy, predict = ctr_deepfm_dataset(user_profile, dense_feature, context_feature, context_feature_fm, label,
+    loss, auc_var, batch_auc_var, accuracy, predict = ctr_deepfm_dataset(dense_feature, context_feature, context_feature_fm, label,
                                                         args.embedding_size, args.sparse_feature_dim)
 
     print("ready to optimize")
@@ -38,7 +38,7 @@ def train():
     exe = fluid.Executor(fluid.CPUPlace())
     exe.run(fluid.default_startup_program())
     dataset = fluid.DatasetFactory().create_dataset()
-    dataset.set_use_var([user_profile] + [dense_feature] + context_feature + [context_feature_fm] + [label])
+    dataset.set_use_var([dense_feature] + context_feature + [context_feature_fm] + [label])
     pipe_command = PYTHON_PATH + "  map_reader.py %d" % args.sparse_feature_dim
     dataset.set_pipe_command(pipe_command)
     dataset.set_batch_size(args.batch_size)

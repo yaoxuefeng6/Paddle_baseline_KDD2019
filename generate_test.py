@@ -81,14 +81,14 @@ def data2tensor(data, place):
     dense = data[0]
     sparse = data[1:-1]
     y = data[-1]
-    user_data = np.array([x[0] for x in data]).astype("float32")
-    user_data = user_data.reshape([-1, 10])
+    #user_data = np.array([x[0] for x in data]).astype("float32")
+    #user_data = user_data.reshape([-1, 10])
     #feed_dict["user_profile"] = user_data
-    dense_data = np.array([x[1] for x in data]).astype("float32")
+    dense_data = np.array([x[0] for x in data]).astype("float32")
     dense_data = dense_data.reshape([-1, 3])
     feed_dict["dense_feature"] = dense_data
     for i in range(num_context_feature):
-        sparse_data = to_lodtensor([x[2 + i] for x in data], place)
+        sparse_data = to_lodtensor([x[1 + i] for x in data], place)
         feed_dict["context" + str(i)] = sparse_data
 
     context_fm = to_lodtensor(np.array([x[-2] for x in data]).astype("float32"), place)

@@ -18,7 +18,7 @@ import math
 user_profile_dim = 65
 dense_feature_dim = 3
 
-def ctr_deepfm_dataset(user_profile, dense_feature, context_feature, context_feature_fm, label,
+def ctr_deepfm_dataset(dense_feature, context_feature, context_feature_fm, label,
                        embedding_size, sparse_feature_dim):
     def dense_fm_layer(input, emb_dict_size, factor_size, fm_param_attr):
 

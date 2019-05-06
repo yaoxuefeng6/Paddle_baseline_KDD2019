@@ -36,6 +36,7 @@ class MapDataset(dg.MultiSlotDataGenerator):
 
     def _process_line(self, line):
         instance = json.loads(line)
+        """
         profile = instance["profile"]
         len_profile = len(profile)
         if len_profile >= 10:
@@ -43,7 +44,7 @@ class MapDataset(dg.MultiSlotDataGenerator):
         else:
             profile.extend([0]*(10-len_profile))
             user_profile_feature = profile
-        """
+        
         if len(profile) > 1 or (len(profile) == 1 and profile[0] != 0):
             for p in profile:
                 if p >= 1 and p <= 65:
@@ -82,7 +83,7 @@ class MapDataset(dg.MultiSlotDataGenerator):
 
         label = [int(instance["label"])]
 
-        return user_profile_feature, dense_feature, context_feature, context_feature_fm, label
+        return dense_feature, context_feature, context_feature_fm, label
 
     def infer_reader(self, filelist, batch, buf_size):
         print(filelist)
@@ -91,8 +92,8 @@ class MapDataset(dg.MultiSlotDataGenerator):
             for fname in filelist:
                 with open(fname.strip(), "r") as fin:
                     for line in fin:
-                        user_profile, dense_feature, sparse_feature, sparse_feature_fm, label = self._process_line(line)
-                        yield [user_profile] + [dense_feature] + sparse_feature + [sparse_feature_fm] + [label]
+                        dense_feature, sparse_feature, sparse_feature_fm, label = self._process_line(line)
+                        yield [dense_feature] + sparse_feature + [sparse_feature_fm] + [label]
 
         import paddle
         batch_iter = paddle.batch(
@@ -108,8 +109,8 @@ class MapDataset(dg.MultiSlotDataGenerator):
             for fname in filelist:
                 with open(fname.strip(), "r") as fin:
                     for line in fin:
-                        user_profile, dense_feature, sparse_feature, sparse_feature_fm, label = self._process_line(line)
-                        yield [user_profile] + [dense_feature] + sparse_feature + [sparse_feature_fm] + [label]
+                        dense_feature, sparse_feature, sparse_feature_fm, label = self._process_line(line)
+                        yield [dense_feature] + sparse_feature + [sparse_feature_fm] + [label]
 
         import paddle
         batch_iter = paddle.batch(
@@ -120,14 +121,15 @@ class MapDataset(dg.MultiSlotDataGenerator):
 
     def generate_sample(self, line):
         def data_iter():
-            user_profile, dense_feature, sparse_feature, sparse_feature_fm, label = self._process_line(line)
-            feature_name = ["user_profile"]
+            dense_feature, sparse_feature, sparse_feature_fm, label = self._process_line(line)
+            #feature_name = ["user_profile"]
+            feature_name = []
             feature_name.append("dense_feature")
             for idx in self.categorical_range_:
                 feature_name.append("context" + str(idx))
             feature_name.append("context_fm")
             feature_name.append("label")
-            yield zip(feature_name, [user_profile] + [dense_feature] + sparse_feature + [sparse_feature_fm] + [label])
+            yield zip(feature_name, [dense_feature] + sparse_feature + [sparse_feature_fm] + [label])
 
         return data_iter
 
