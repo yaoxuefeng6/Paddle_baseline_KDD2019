@@ -21,6 +21,7 @@ class MapDataset(dg.MultiSlotDataGenerator):
     def setup(self, sparse_feature_dim):
         self.profile_length = 65
         self.dense_length = 3
+        #feature names
         self.dense_feature_list = ["distance", "price", "eta"]
 
         self.pid_list = ["pid"]
@@ -32,8 +33,10 @@ class MapDataset(dg.MultiSlotDataGenerator):
         self.weather_feature_list = ["max_temp", "min_temp", "wea", "wind"]
         self.hash_dim = 1000001
         self.train_idx_ = 2000000
+        #carefully set if you change the features 
         self.categorical_range_ = range(0, 22)
 
+    #process one instance
     def _process_line(self, line):
         instance = json.loads(line)
         """
@@ -102,6 +105,7 @@ class MapDataset(dg.MultiSlotDataGenerator):
             batch_size=batch)
         return batch_iter
 
+    #generat inputs for testing
     def test_reader(self, filelist, batch, buf_size):
         print(filelist)
 
@@ -119,6 +123,7 @@ class MapDataset(dg.MultiSlotDataGenerator):
             batch_size=batch)
         return batch_iter
 
+    #generate inputs for trainig 
     def generate_sample(self, line):
         def data_iter():
             dense_feature, sparse_feature, sparse_feature_fm, label = self._process_line(line)

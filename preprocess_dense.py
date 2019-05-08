@@ -32,6 +32,7 @@ PROFILES_PATH = "./data_set_phase1/profiles.csv"
 OUT_DIR = "./out"
 ORI_TRAIN_PATH = "train.txt"
 NORM_TRAIN_PATH = "normed_train.txt"
+#variable to control the ratio of positive and negative instance of transmode 0 which is original label of no click
 THRESHOLD_LABEL = 0.5
 
 
@@ -118,7 +119,7 @@ def preprocess():
             reqweekday = datetime.datetime.strptime(line[2], '%Y-%m-%d %H:%M:%S').strftime("%w")
             reqhour = datetime.datetime.strptime(line[2], '%Y-%m-%d %H:%M:%S').strftime("%H")
 
-
+            # weather related features, no big use, maybe more detailed weather information is better
             date_key = datetime.datetime.strptime(line[2], '%Y-%m-%d %H:%M:%S').strftime("%m-%d")
             train_data_dict[train_index]["weather"] = {}
             train_data_dict[train_index]["weather"].update({"max_temp": weather_dict[date_key]["max_temp"]})
@@ -181,7 +182,8 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                 cur_map["profile"] = profile_map[cur_map["pid"]]
             else:
                 cur_map["profile"] = [0]
-
+            
+            #rank information related feature 
             whole_rank = 0
             for plan in plan_list:
                 whole_rank += 1
@@ -255,6 +257,8 @@ def generate_sparse_features(train_data_dict, profile_map, session_click_map, pl
                     f_train.write(cur_json_instance + '\n')
             
             cur_map["plan"] = {}
+            #since we define a new ctr task from original task, we use a basic way to generate instances of transport mode 0.
+            #There should be a optimal strategy to generate instances of transport mode 0
             if not flag_click:
                 cur_map["plan"]["distance"] = -1
                 cur_map["plan"]["price"] = -1
