@@ -5,10 +5,10 @@ import io
 
 def build():
     submit_map = {}
-    with io.open('./submit/submit.csv', 'wb') as csv_file:
+    with io.open('./submit/submit.csv', 'w') as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow(['sid', 'recommend_mode'])
-        # choose the res file you want to build submit file
+        # choose the res file you want to build submit file 
         with open('./out/normed_test_session.txt', 'r') as f1:
             with open('./testres/res8', 'r') as f2:
                 cur_session =''

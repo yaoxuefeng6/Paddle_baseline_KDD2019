@@ -19,6 +19,10 @@ import numpy as np
 # disable gpu training for this example
 import os
 
+#this is set for python3 environment and the paddle install path is only use for jarvis platform
+sys.path.append("/usr/local/cuda-9.2/conda/envs/py36-paddle/lib/python3.6/site-packages/paddle/fluid")
+sys.path.append("/usr/local/cuda-9.2/conda/envs/py36-paddle/lib/python3.6/site-packages/paddle/fluid/proto")
+
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 import paddle
 import paddle.fluid as fluid
@@ -106,7 +110,7 @@ def test():
     test_scope = fluid.core.Scope()
 
     # filelist = ["%s/%s" % (args.data_path, x) for x in os.listdir(args.data_path)]
-    from map_reader import MapDataset
+    from map_reader_mmh import MapDataset
     map_dataset = MapDataset()
     map_dataset.setup(args.sparse_feature_dim)
     exe = fluid.Executor(place)
@@ -114,7 +118,7 @@ def test():
     whole_filelist = ["./out/normed_test_session.txt"]
     test_files = whole_filelist[int(0.0 * len(whole_filelist)):int(1.0 * len(whole_filelist))]
 
-    #set how many epochs runing for infer
+    # set how many epochs runing for infer
     epochs = 1
 
     for i in range(epochs):
