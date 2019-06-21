@@ -17,7 +17,7 @@ import argparse
 import logging
 import numpy as np
 # disable gpu training for this example
-import os
+import os, sys
 
 #this is set for python3 environment and the paddle install path is only use for jarvis platform
 sys.path.append("/usr/local/cuda-9.2/conda/envs/py36-paddle/lib/python3.6/site-packages/paddle/fluid")
