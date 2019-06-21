@@ -10,7 +10,7 @@ def build():
         writer.writerow(['sid', 'recommend_mode'])
         # choose the res file you want to build submit file 
         with open('./out/normed_test_session.txt', 'r') as f1:
-            with open('./testres/res8', 'r') as f2:
+            with open('./testres/res0', 'r') as f2:
                 cur_session =''
                 for x, y in zip(f1.readlines(), f2.readlines()):
                     m1 = json.loads(x)
